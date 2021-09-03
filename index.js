@@ -19,7 +19,13 @@ window.addEventListener('load', async () => {
       return;
     }
 
-    dataChannel.send(event.currentTarget.value);
+    try {
+      dataChannel.send(event.currentTarget.value);
+    }
+    catch (error) {
+      alert(error.message);
+    }
+
     const messageDiv = document.createElement('div');
     messageDiv.textContent = 'ME:' + event.currentTarget.value;
     messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
