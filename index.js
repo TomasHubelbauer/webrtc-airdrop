@@ -120,7 +120,7 @@ window.addEventListener('load', async () => {
           chatDiv.classList.toggle('hidden', false);
         });
 
-        dataChannel.addEventListener('message', event => {
+        event.channel.addEventListener('message', event => {
           const messageDiv = document.createElement('div');
           messageDiv.textContent = 'THEM:' + event.data;
           messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
