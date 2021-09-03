@@ -1,4 +1,5 @@
 window.addEventListener('load', async () => {
+  const statusDiv = document.querySelector('#statusDiv');
   const introP = document.querySelector('#introP');
   const offerP = document.querySelector('#offerP');
   const answerP = document.querySelector('#answerP');
@@ -70,6 +71,10 @@ window.addEventListener('load', async () => {
         }
       });
 
+      peerConnection.addEventListener('iceconnectionstatechange', () => {
+        statusDiv.textContent = peerConnection.iceConnectionState === 'connected' ? '' : peerConnection.iceConnectionState;
+      });
+
       dataChannel = peerConnection.createDataChannel('webrtc-airdrop');
       dataChannel.onbufferedamountlow = () => console.log('onbufferedamountlow');
       dataChannel.onclose = () => console.log('onclose');
@@ -113,6 +118,10 @@ window.addEventListener('load', async () => {
           location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
           answerP.classList.toggle('hidden', false);
         }
+      });
+
+      peerConnection.addEventListener('iceconnectionstatechange', () => {
+        statusDiv.textContent = peerConnection.iceConnectionState === 'connected' ? '' : peerConnection.iceConnectionState;
       });
 
       peerConnection.addEventListener('datachannel', event => {
