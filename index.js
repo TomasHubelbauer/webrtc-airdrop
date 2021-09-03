@@ -35,16 +35,16 @@ window.addEventListener('load', async () => {
             }
 
             const sdp = localStorage.payload;
-            localStorage.payload = '';
-
-            alert(sdp);
             await peerConnection.setRemoteDescription({ type: 'answer', sdp });
+            localStorage.payload = '';
           }
 
-          // Wait for the answer tab (AirDrop-ed) relays the SDP to this tab
+          // Wait for the answer tab (AirDrop-ed) to relay the SDP to this tab
           await wait();
         }
       });
+
+      peerConnection.addEventListener('datachannel', () => alert('data channel'));
 
       dataChannel = peerConnection.createDataChannel('webrtc-airdrop');
       dataChannel.onbufferedamountlow = () => console.log('onbufferedamountlow');
@@ -84,12 +84,14 @@ window.addEventListener('load', async () => {
       });
 
       peerConnection.addEventListener('datachannel', event => {
+        alert('The channel is now open! ' + event.channel.label);
+
+        event.channel.addEventListener('open', () => alert('data channel'));
+
         location.hash = '';
         document.querySelector('#answerP').classList.toggle('hidden', true);
         document.querySelector('#channelP').classList.toggle('hidden', false);
         document.querySelector('#chatDiv').classList.toggle('hidden', false);
-
-        alert('The channel is now open!');
       });
 
       await peerConnection.setRemoteDescription({ type, sdp });
@@ -97,7 +99,7 @@ window.addEventListener('load', async () => {
       break;
     }
 
-
+    // Receive the answer (in a new tab) and relay it to the original tab
     case 'answer': {
       localStorage.payload = sdp;
       window.close();
