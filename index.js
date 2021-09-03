@@ -113,20 +113,22 @@ window.addEventListener('load', async () => {
       });
 
       peerConnection.addEventListener('datachannel', event => {
-        event.channel.onbufferedamountlow = () => console.log('onbufferedamountlow');
-        event.channel.onclose = () => console.log('onclose');
-        event.channel.onerror = () => console.log('onerror');
-        event.channel.onmessage = event => console.log('onerror', event.data, event.lastEventId, event.origin, event.ports, event.source);
-        event.channel.onopen = () => console.log('onopen');
+        dataChannel = event.channel;
 
-        event.channel.addEventListener('open', () => {
+        dataChannel.onbufferedamountlow = () => console.log('onbufferedamountlow');
+        dataChannel.onclose = () => console.log('onclose');
+        dataChannel.onerror = () => console.log('onerror');
+        dataChannel.onmessage = event => console.log('onerror', event.data, event.lastEventId, event.origin, event.ports, event.source);
+        dataChannel.onopen = () => console.log('onopen');
+
+        dataChannel.addEventListener('open', () => {
           location.hash = '';
           answerP.classList.toggle('hidden', true);
           channelP.classList.toggle('hidden', false);
           chatDiv.classList.toggle('hidden', false);
         });
 
-        event.channel.addEventListener('message', event => {
+        dataChannel.addEventListener('message', event => {
           const messageDiv = document.createElement('div');
           messageDiv.textContent = 'THEM:' + event.data;
           messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
