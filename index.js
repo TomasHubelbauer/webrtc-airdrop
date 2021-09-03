@@ -1,5 +1,5 @@
 window.addEventListener('load', async () => {
-  const { type, sdp } = JSON.parse(decodeURIComponent(location.hash.slice('#'.length) || '{}'));
+  const { type, sdp } = JSON.parse(atob(location.hash.slice('#'.length)) || '{}');
 
   /** @type {RTCPeerConnection} */
   let peerConnection;
@@ -22,7 +22,7 @@ window.addEventListener('load', async () => {
 
       peerConnection.addEventListener('icegatheringstatechange', () => {
         if (peerConnection.iceGatheringState === 'complete') {
-          location.hash = JSON.stringify(peerConnection.localDescription.toJSON());
+          location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
           document.body.textContent = 'Share this page via AirDrop!';
         }
       });
@@ -52,7 +52,7 @@ window.addEventListener('load', async () => {
 
       peerConnection.addEventListener('icegatheringstatechange', () => {
         if (peerConnection.iceGatheringState === 'complete') {
-          location.hash = JSON.stringify(peerConnection.localDescription.toJSON());
+          location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
           document.body.textContent = 'Share this page back via AirDrop!';
         }
       });
