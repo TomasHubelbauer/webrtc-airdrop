@@ -24,6 +24,25 @@ window.addEventListener('load', async () => {
         if (peerConnection.iceGatheringState === 'complete') {
           location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
           document.body.textContent = 'Share this page via AirDrop!';
+
+          // Reset the `sdp` shared value in case it remained set errorneously
+          localStorage.sdp = '';
+
+          function wait() {
+            if (!localStorage.payload) {
+              window.requestAnimationFrame(wait);
+              return;
+            }
+
+            const sdp = localStorage.payload;
+            localStorage.payload = '';
+
+            alert(sdp);
+            await peerConnection.setRemoteDescription({ type: 'answer', sdp });
+          }
+
+          // Wait for the answer tab (AirDrop-ed) relays the SDP to this tab
+          wait();
         }
       });
 
@@ -64,8 +83,8 @@ window.addEventListener('load', async () => {
 
 
     case 'answer': {
-      await peerConnection.setRemoteDescription({ type, sdp });
-      alert('todo');
+      localStorage.payload = sdp;
+      window.close();
       break;
     }
   }
