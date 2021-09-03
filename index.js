@@ -20,7 +20,7 @@ window.addEventListener('load', async () => {
       peerConnection.onsignalingstatechange = () => console.log('onsignalingstatechange', peerConnection.signalingState);
       peerConnection.ontrack = event => console.log('ontrack', event.track, event.receiver, event.transceiver, event.streams);
 
-      peerConnection.addEventListener('icegatheringstatechange', () => {
+      peerConnection.addEventListener('icegatheringstatechange', async () => {
         if (peerConnection.iceGatheringState === 'complete') {
           location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
           document.body.textContent = 'Share this page via AirDrop!';
@@ -28,7 +28,7 @@ window.addEventListener('load', async () => {
           // Reset the `sdp` shared value in case it remained set errorneously
           localStorage.sdp = '';
 
-          function wait() {
+          async function wait() {
             if (!localStorage.payload) {
               window.requestAnimationFrame(wait);
               return;
@@ -42,7 +42,7 @@ window.addEventListener('load', async () => {
           }
 
           // Wait for the answer tab (AirDrop-ed) relays the SDP to this tab
-          wait();
+          await wait();
         }
       });
 
