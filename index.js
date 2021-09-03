@@ -1,4 +1,5 @@
 window.addEventListener('load', async () => {
+  const introP = document.querySelector('#introP');
   const offerP = document.querySelector('#offerP');
   const answerP = document.querySelector('#answerP');
   const channelP = document.querySelector('#channelP');
@@ -78,8 +79,10 @@ window.addEventListener('load', async () => {
 
       dataChannel.addEventListener('open', () => {
         location.hash = '';
+        introP.classList.toggle('hidden', true);
         offerP.classList.toggle('hidden', true);
         channelP.classList.toggle('hidden', false);
+        setTimeout(() => channelP.classList.toggle('hidden', true), 5000);
         chatDiv.classList.toggle('hidden', false);
       });
 
@@ -123,8 +126,10 @@ window.addEventListener('load', async () => {
 
         dataChannel.addEventListener('open', () => {
           location.hash = '';
+          introP.classList.toggle('hidden', true);
           answerP.classList.toggle('hidden', true);
           channelP.classList.toggle('hidden', false);
+          setTimeout(() => channelP.classList.toggle('hidden', true), 5000);
           chatDiv.classList.toggle('hidden', false);
         });
 
