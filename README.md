@@ -22,3 +22,10 @@ work across any two browsers on iOS/macOS that support URL sharing over AirDrop.
 
 The URL JSON payload is Base64 encoded, because Firefox fails to load the Share
 menu providers if the URL is not encoded this way.
+
+## To-Do
+
+### Add a connection state indicator to tell when offline and when back online
+
+The connection might drop and recover, it would be good to see this shown in the
+UI.
