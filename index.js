@@ -23,7 +23,7 @@ window.addEventListener('load', async () => {
       peerConnection.addEventListener('icegatheringstatechange', async () => {
         if (peerConnection.iceGatheringState === 'complete') {
           location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
-          document.body.textContent = 'Share this page via AirDrop!';
+          document.querySelector('#offerP').classList.toggle('hidden', false);
 
           // Reset the `sdp` shared value in case it remained set errorneously
           localStorage.sdp = '';
@@ -53,6 +53,12 @@ window.addEventListener('load', async () => {
       dataChannel.onmessage = event => console.log('onerror', event.data, event.lastEventId, event.origin, event.ports, event.source);
       dataChannel.onopen = () => console.log('onopen');
 
+      dataChannel.addEventListener('open', () => {
+        document.querySelector('#offerP').classList.toggle('hidden', true);
+        document.querySelector('#channelP').classList.toggle('hidden', false);
+        document.querySelector('#chatDiv').classList.toggle('hidden', false);
+      });
+
       await peerConnection.setLocalDescription(await peerConnection.createOffer());
       break;
     }
@@ -72,8 +78,16 @@ window.addEventListener('load', async () => {
       peerConnection.addEventListener('icegatheringstatechange', () => {
         if (peerConnection.iceGatheringState === 'complete') {
           location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
-          document.body.textContent = 'Share this page back via AirDrop!';
+          document.querySelector('#answerP').classList.toggle('hidden', false);
         }
+      });
+
+      peerConnection.addEventListener('datachannel', event => {
+        document.querySelector('#answerP').classList.toggle('hidden', true);
+        document.querySelector('#channelP').classList.toggle('hidden', false);
+        document.querySelector('#chatDiv').classList.toggle('hidden', false);
+
+        alert('The channel is now open!');
       });
 
       await peerConnection.setRemoteDescription({ type, sdp });

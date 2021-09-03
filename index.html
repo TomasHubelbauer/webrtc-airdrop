@@ -5,8 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>WebRTC AirDrop</title>
     <script src="index.js"></script>
+    <link rel="stylesheet" href="index.css" />
   </head>
   <body>
+    <h1>WebRTC AirDrop Signaling Channel</h1>
+    <p>
+      This page enables information exchange over a WebRTC data channel. The
+      peer connection is established completely serverlessly, by using AirDrop
+      on iOS and macOS devices to establish a signaling channel and exchanging
+      SDP with included ICE candidates (no trickle ICE).
+    </p>
+    <p id="offerP hidden">
+      Share this page to another iOS/macOS device and then share the page that
+      opens there back to the original device to establish the connection.
+    </p>
+    <p id="answerP hidden">
+      Now share this page back to the original device you've shared from.
+    </p>
+    <p id="channelP hidden">
+      The communication has been established! You can chat now:
+    </p>
+    <div id="chatDiv hidden">
+      <input />
+      <div id="messageDiv">
 
+      </div>
+    </div>
   </body>
 </html>
