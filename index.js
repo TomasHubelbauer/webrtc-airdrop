@@ -54,6 +54,7 @@ window.addEventListener('load', async () => {
       dataChannel.onopen = () => console.log('onopen');
 
       dataChannel.addEventListener('open', () => {
+        location.hash = '';
         document.querySelector('#offerP').classList.toggle('hidden', true);
         document.querySelector('#channelP').classList.toggle('hidden', false);
         document.querySelector('#chatDiv').classList.toggle('hidden', false);
@@ -83,6 +84,7 @@ window.addEventListener('load', async () => {
       });
 
       peerConnection.addEventListener('datachannel', event => {
+        location.hash = '';
         document.querySelector('#answerP').classList.toggle('hidden', true);
         document.querySelector('#channelP').classList.toggle('hidden', false);
         document.querySelector('#chatDiv').classList.toggle('hidden', false);
