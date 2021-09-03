@@ -97,6 +97,10 @@ window.addEventListener('load', async () => {
         messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
       });
 
+      dataChannel.addEventListener('close', () => {
+        input.disabled = true;
+      });
+
       await peerConnection.setLocalDescription(await peerConnection.createOffer());
       break;
     }
@@ -146,6 +150,10 @@ window.addEventListener('load', async () => {
           const messageDiv = document.createElement('div');
           messageDiv.textContent = 'THEM:' + event.data;
           messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
+        });
+
+        dataChannel.addEventListener('close', () => {
+          input.disabled = true;
         });
       });
 
