@@ -1,4 +1,11 @@
 window.addEventListener('load', async () => {
+  const offerP = document.querySelector('#offerP');
+  const answerP = document.querySelector('#answerP');
+  const channelP = document.querySelector('#channelP');
+  const chatDiv = document.querySelector('#chatDiv');
+  const messagesDiv = document.querySelector('#messagesDiv');
+  const input = document.querySelector('input');
+
   const { type, sdp } = JSON.parse(atob(location.hash.slice('#'.length)) || '{}');
 
   /** @type {RTCPeerConnection} */
@@ -6,6 +13,18 @@ window.addEventListener('load', async () => {
 
   /** @type {RTCDataChannel} */
   let dataChannel;
+
+  input.addEventListener('keypress', event => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    dataChannel.send(event.currentTarget.value);
+    const messageDiv = document.createElement('div');
+    messageDiv.textContent = 'ME:' + event.currentTarget.value;
+    messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
+    event.currentTarget.value = '';
+  });
 
   switch (type) {
     // Create an offer and set it to the URL hash JSON payload for AirDrop share
@@ -23,7 +42,7 @@ window.addEventListener('load', async () => {
       peerConnection.addEventListener('icegatheringstatechange', async () => {
         if (peerConnection.iceGatheringState === 'complete') {
           location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
-          document.querySelector('#offerP').classList.toggle('hidden', false);
+          offerP.classList.toggle('hidden', false);
 
           // Reset the `sdp` shared value in case it remained set errorneously
           localStorage.sdp = '';
@@ -44,8 +63,6 @@ window.addEventListener('load', async () => {
         }
       });
 
-      peerConnection.addEventListener('datachannel', () => alert('data channel'));
-
       dataChannel = peerConnection.createDataChannel('webrtc-airdrop');
       dataChannel.onbufferedamountlow = () => console.log('onbufferedamountlow');
       dataChannel.onclose = () => console.log('onclose');
@@ -55,9 +72,15 @@ window.addEventListener('load', async () => {
 
       dataChannel.addEventListener('open', () => {
         location.hash = '';
-        document.querySelector('#offerP').classList.toggle('hidden', true);
-        document.querySelector('#channelP').classList.toggle('hidden', false);
-        document.querySelector('#chatDiv').classList.toggle('hidden', false);
+        offerP.classList.toggle('hidden', true);
+        channelP.classList.toggle('hidden', false);
+        chatDiv.classList.toggle('hidden', false);
+      });
+
+      dataChannel.addEventListener('message', event => {
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = 'THEM:' + event.data;
+        messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
       });
 
       await peerConnection.setLocalDescription(await peerConnection.createOffer());
@@ -79,19 +102,29 @@ window.addEventListener('load', async () => {
       peerConnection.addEventListener('icegatheringstatechange', () => {
         if (peerConnection.iceGatheringState === 'complete') {
           location.hash = btoa(JSON.stringify(peerConnection.localDescription.toJSON()));
-          document.querySelector('#answerP').classList.toggle('hidden', false);
+          answerP.classList.toggle('hidden', false);
         }
       });
 
       peerConnection.addEventListener('datachannel', event => {
-        alert('The channel is now open! ' + event.channel.label);
+        event.channel.onbufferedamountlow = () => console.log('onbufferedamountlow');
+        event.channel.onclose = () => console.log('onclose');
+        event.channel.onerror = () => console.log('onerror');
+        event.channel.onmessage = event => console.log('onerror', event.data, event.lastEventId, event.origin, event.ports, event.source);
+        event.channel.onopen = () => console.log('onopen');
 
-        event.channel.addEventListener('open', () => alert('data channel'));
+        event.channel.addEventListener('open', () => {
+          location.hash = '';
+          answerP.classList.toggle('hidden', true);
+          channelP.classList.toggle('hidden', false);
+          chatDiv.classList.toggle('hidden', false);
+        });
 
-        location.hash = '';
-        document.querySelector('#answerP').classList.toggle('hidden', true);
-        document.querySelector('#channelP').classList.toggle('hidden', false);
-        document.querySelector('#chatDiv').classList.toggle('hidden', false);
+        dataChannel.addEventListener('message', event => {
+          const messageDiv = document.createElement('div');
+          messageDiv.textContent = 'THEM:' + event.data;
+          messagesDiv.insertAdjacentElement('afterbegin', messageDiv);
+        });
       });
 
       await peerConnection.setRemoteDescription({ type, sdp });
