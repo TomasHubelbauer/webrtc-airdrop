@@ -17,3 +17,8 @@ work across any two browsers on iOS/macOS that support URL sharing over AirDrop.
 - The original tab page finalizes the connection
 - The new tab page closes itself
 - The data channel opens
+
+## Notes
+
+The URL JSON payload is Base64 encoded, because Firefox fails to load the Share
+menu providers if the URL is not encoded this way.
