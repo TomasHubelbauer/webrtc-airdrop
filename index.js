@@ -1,35 +1,33 @@
 window.addEventListener('load', async () => {
-  const url = new URL(location);
+  const { type, sdp } = JSON.parse(decodeURIComponent(location.hash.slice('#'.length) || '{}'));
 
-  // Coerce hosted version to allow debugging on `file:` but sharing on `https:`
-  if (url.protocol === 'file:') {
-    url.protocol = 'https:';
-    url.hostname = 'tomashubelbauer.github.io';
-    url.pathname = 'webrtc-airdrop';
-  }
+  /** @type {RTCPeerConnection} */
+  let peerConnection;
 
-  switch (url.searchParams.get('type')) {
-    case null: {
-      const peerConnection = new RTCPeerConnection({ iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] });
-      // peerConnection.onconnectionstatechange = () => console.log('onconnectionstatechange', peerConnection.connectionState);
-      // peerConnection.ondatachannel = event => console.log('ondatachannel', event.channel);
-      // peerConnection.onicecandidate = event => console.log('onicecandidate', event.candidate);
-      // peerConnection.oniceconnectionstatechange = () => console.log('oniceconnectionstatechange', peerConnection.iceConnectionState);
-      // peerConnection.onicegatheringstatechange = () => console.log('onicegatheringstatechange', peerConnection.iceGatheringState);
-      // peerConnection.onnegotiationneeded = () => console.log('onnegotiationneeded');
-      // peerConnection.onsignalingstatechange = () => console.log('onsignalingstatechange', peerConnection.signalingState);
-      // peerConnection.ontrack = event => console.log('ontrack', event.track, event.receiver, event.transceiver, event.streams);
+  /** @type {RTCDataChannel} */
+  let dataChannel;
+
+  switch (type) {
+    // Create an offer and set it to the URL hash JSON payload for AirDrop share
+    case undefined: {
+      peerConnection = new RTCPeerConnection({ iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] });
+      peerConnection.onconnectionstatechange = () => console.log('onconnectionstatechange', peerConnection.connectionState);
+      peerConnection.ondatachannel = event => console.log('ondatachannel', event.channel);
+      peerConnection.onicecandidate = event => console.log('onicecandidate', event.candidate);
+      peerConnection.oniceconnectionstatechange = () => console.log('oniceconnectionstatechange', peerConnection.iceConnectionState);
+      peerConnection.onicegatheringstatechange = () => console.log('onicegatheringstatechange', peerConnection.iceGatheringState);
+      peerConnection.onnegotiationneeded = () => console.log('onnegotiationneeded');
+      peerConnection.onsignalingstatechange = () => console.log('onsignalingstatechange', peerConnection.signalingState);
+      peerConnection.ontrack = event => console.log('ontrack', event.track, event.receiver, event.transceiver, event.streams);
 
       peerConnection.addEventListener('icegatheringstatechange', () => {
         if (peerConnection.iceGatheringState === 'complete') {
-          url.searchParams.set('type', peerConnection.localDescription.type);
-          url.searchParams.set('sdp', peerConnection.localDescription.sdp);
-          url.hash = 'guide';
-          window.open(url);
+          location.hash = JSON.stringify(peerConnection.localDescription.toJSON());
+          document.body.textContent = 'Share this page via AirDrop!';
         }
       });
 
-      const dataChannel = peerConnection.createDataChannel('webrtc-airdrop');
+      dataChannel = peerConnection.createDataChannel('webrtc-airdrop');
       dataChannel.onbufferedamountlow = () => console.log('onbufferedamountlow');
       dataChannel.onclose = () => console.log('onclose');
       dataChannel.onerror = () => console.log('onerror');
@@ -39,25 +37,34 @@ window.addEventListener('load', async () => {
       await peerConnection.setLocalDescription(await peerConnection.createOffer());
       break;
     }
+
+    // Receive the offer and create an answer shared via URL the same way
     case 'offer': {
-      // Handle the URL on the offerer side: show sharing instructions
-      if (url.hash === '#guide') {
-        // Drop the `#guide` hash so that the AirDrop-shared URL lacks it
-        location.hash = '';
+      peerConnection = new RTCPeerConnection({ iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] });
+      peerConnection.onconnectionstatechange = () => console.log('onconnectionstatechange', peerConnection.connectionState);
+      peerConnection.ondatachannel = event => console.log('ondatachannel', event.channel);
+      peerConnection.onicecandidate = event => console.log('onicecandidate', event.candidate);
+      peerConnection.oniceconnectionstatechange = () => console.log('oniceconnectionstatechange', peerConnection.iceConnectionState);
+      peerConnection.onicegatheringstatechange = () => console.log('onicegatheringstatechange', peerConnection.iceGatheringState);
+      peerConnection.onnegotiationneeded = () => console.log('onnegotiationneeded');
+      peerConnection.onsignalingstatechange = () => console.log('onsignalingstatechange', peerConnection.signalingState);
+      peerConnection.ontrack = event => console.log('ontrack', event.track, event.receiver, event.transceiver, event.streams);
 
-        // TODO: Show a guide on how to do that depending on the browser
-        document.body.textContent = 'Share this page via AirDrop!';
-      }
+      peerConnection.addEventListener('icegatheringstatechange', () => {
+        if (peerConnection.iceGatheringState === 'complete') {
+          location.hash = JSON.stringify(peerConnection.localDescription.toJSON());
+          document.body.textContent = 'Share this page back via AirDrop!';
+        }
+      });
 
-      // Handle the URL on the answerer side: create answer for sharing back
-      else {
-        document.body.textContent = url.toString();
-        alert('todo');
-      }
-
+      await peerConnection.setRemoteDescription({ type, sdp });
+      await peerConnection.setLocalDescription(await peerConnection.createAnswer());
       break;
     }
+
+
     case 'answer': {
+      await peerConnection.setRemoteDescription({ type, sdp });
       alert('todo');
       break;
     }
